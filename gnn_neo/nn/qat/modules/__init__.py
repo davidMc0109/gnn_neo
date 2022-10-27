@@ -1,7 +1,7 @@
 import torch
 
 from gnn_neo.nn.qat.utils import _get_qconfig as _general_get_qconfig
-from gnn_neo.quantization.qconfig import QConfigEntry
+from gnn_neo.quantization.qconfig import QConfigEntry, QConfig
 
 def _get_qconfig(kwargs):
     _CHECK_FIELDS = ['weight', 'bias', 'input', 'output']
@@ -11,8 +11,24 @@ def _get_qconfig(kwargs):
         assert checkee is None or isinstance(checkee, QConfigEntry)
     return qconfig
 
+def _check_qconfig(qconfig):
+    """
+    Checks if input is a valid QConfig object
+    """
+    assert isinstance(qconfig, QConfig)
+    _CHECK_FIELDS = ['weight', 'bias', 'input', 'output']
+    for field in _CHECK_FIELDS:
+        checkee = qconfig[field]
+        assert checkee is None or isinstance(checkee, QConfigEntry)
+    return True
 
-def _get_fake_quantize(qconfig):
+def _get_fake_quantize(qconfig: QConfig):
+    """
+    Break down qconfig into input, weight, output, and bias quantization
+    configs
+    :param qconfig:
+    :return:
+    """
     if qconfig.weight is not None:
         weight_quantize = qconfig.weight()
     else:
