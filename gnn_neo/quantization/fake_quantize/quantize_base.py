@@ -12,8 +12,21 @@ class QuantizeBase(nn.Module):
         super(QuantizeBase, self).__init__()
         self.qscheme = qscheme
         self.observer = observer
-        self.calibration = torch.tensor(True)
-        self.quantization = torch.tensor(True)
+        self.register_buffer("calibration", torch.tensor(True))
+        self.register_buffer("quantization", torch.tensor(True))
+
+    def get_extra_state(self):
+        return {
+            "qscheme": self.qscheme,
+            "observer": self.observer
+        }
+
+    def set_extra_state(self, state):
+        if isinstance(state, dict):
+            if "qscheme" in state:
+                self.qscheme = state["qscheme"]
+            if "observer" in state:
+                self.observer = state["observer"]
 
     def forward(self, x):
         if self.calibration:

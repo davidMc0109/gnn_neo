@@ -5,12 +5,8 @@ from gnn_neo.quantization.qconfig import QConfig
 
 def _get_default_mapping():
     mapping = {}
-    mapping[torch.nn.Linear] = linear_to_qat
-    mapping[torch.nn.Conv1d] = conv1d_to_qat
-    mapping[torch.nn.Conv2d] = conv2d_to_qat
-    mapping[torch.nn.Conv3d] = conv3d_to_qat
-
     return mapping
+
 
 def _get_default_qconfig():
     return QConfig()
