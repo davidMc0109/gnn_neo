@@ -9,6 +9,8 @@ from torch_geometric.nn import SplineConv
 
 from gnn_neo.quantization.quantizer.quantize_lmp import LayerWiseMultiPrecisionQuantizer
 from gnn_neo.quantization.quantizer.pyg_to_torch import PygToTorchTransformer
+from gnn_neo.quantization.utils import get_mp_alphas, get_mp_params_cost
+
 
 dataset = 'Cora'
 transform = T.Compose([
@@ -39,14 +41,22 @@ device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
 model, data = Net().to(device), data.to(device)
 model = PygToTorchTransformer()(model)
 model = LayerWiseMultiPrecisionQuantizer()(model)
-optimizer = torch.optim.Adam(model.parameters(), lr=0.01, weight_decay=5e-3)
+alphas = get_mp_alphas(model).values()
+weights = list(set(model.parameters()).difference(alphas))
+optimizer = torch.optim.Adam(weights, lr=0.01, weight_decay=5e-3)
+optimizer_mp = torch.optim.Adam(alphas, lr=0.01)
 
 
 def train():
     model.train()
     optimizer.zero_grad()
-    F.nll_loss(model(data)[data.train_mask], data.y[data.train_mask]).backward()
+    optimizer_mp.zero_grad()
+    acc_loss = F.nll_loss(model(data)[data.train_mask], data.y[data.train_mask])
+    mp_loss = get_mp_params_cost(model)
+    loss = acc_loss + 0.03*mp_loss * (acc_loss.detach().clone() / mp_loss.detach().clone())
+    loss.backward()
     optimizer.step()
+    optimizer_mp.step()
 
 
 @torch.no_grad()

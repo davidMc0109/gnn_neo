@@ -30,43 +30,6 @@ def _fake_quantize_learnable_per_tensor_affine_training(x, scale, zero_point, qu
     return (x - zero_point) * scale
 
 
-class FakeQuantizeLearnablePerchannelAffine(torch.autograd.Function):
-    @staticmethod
-    def backward(ctx: Any, *grad_outputs: Any) -> Any:
-        pass
-
-    @staticmethod
-    def jvp(ctx: Any, *grad_inputs: Any) -> Any:
-        pass
-
-    @staticmethod
-    def forward(ctx, x, scale, zero_point, ch_axis, quant_min, quant_max, grad_factor):
-        return _fake_quantize_learnable_per_channel_affine_training(x, scale, zero_point, ch_axis,
-                                                                    quant_min, quant_max, grad_factor)
-
-    @staticmethod
-    def symbolic(g, x, scale, zero_point, ch_axis, quant_min, quant_max, grad_factor):
-        return g.op("::FakeQuantizeLearnablePerchannelAffine", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max)
-
-
-class FakeQuantizeLearnablePertensorAffine(torch.autograd.Function):
-    @staticmethod
-    def backward(ctx: Any, *grad_outputs: Any) -> Any:
-        pass
-
-    @staticmethod
-    def jvp(ctx: Any, *grad_inputs: Any) -> Any:
-        pass
-
-    @staticmethod
-    def forward(ctx, x, scale, zero_point, quant_min, quant_max, grad_factor):
-        return _fake_quantize_learnable_per_tensor_affine_training(x, scale, zero_point, quant_min, quant_max, grad_factor)
-
-    @staticmethod
-    def symbolic(g, x, scale, zero_point, ch_axis, quant_min, quant_max, grad_factor):
-        return g.op("::FakeQuantizeLearnablePerchannelAffine", x, scale, zero_point, quant_min_i=quant_min, quant_max_i=quant_max)
-
-
 class LearnableFakeQuantize(QuantizeBase):
     def __init__(self, qscheme, observer, use_grad_scaling=True):
         super(LearnableFakeQuantize, self).__init__(qscheme, observer)

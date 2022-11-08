@@ -31,17 +31,19 @@ class QScheme(AttrDict):
 
 
 class QConfigEntry(AttrDict):
-    def __init__(self, observer=None, fake_quantize=None, q_scheme=None, **kwargs):
+    def __init__(self, observer=None, fake_quantize=None, q_scheme=None, mode='per_tensor', **kwargs):
         super(QConfigEntry, self).__init__()
         from gnn_neo.quantization.observer.min_max_observer import MinMaxObserver
         from gnn_neo.quantization.fake_quantize.lsq import LearnableFakeQuantize
         self['observer'] = observer if observer is not None else MinMaxObserver
         self['fake_quantize'] = fake_quantize if fake_quantize is not None else LearnableFakeQuantize
         self['qscheme'] = q_scheme if q_scheme is not None else QScheme()
+        # self['mode'] = mode
         for key in kwargs:
             self[key] = kwargs[key]
 
     def __call__(self, *args, **kwargs):
+        # observer = self.observer(self.mode)
         observer = self.observer()
         fake_quantize = self.fake_quantize(self.qscheme, observer)
         return fake_quantize

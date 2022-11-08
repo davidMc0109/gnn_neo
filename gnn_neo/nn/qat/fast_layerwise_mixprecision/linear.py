@@ -28,7 +28,7 @@ class Linear(torch.nn.Linear):
             if self.bias is not None:
                 bias = self.bias_quantize[branch](self.bias)
                 if biases is None:
-                    biases = torch.zeros((len(bias),) + bias.shape, dtype=bias.dtype, device=bias.device)
+                    biases = torch.zeros((len(normalized_alpha),) + bias.shape, dtype=bias.dtype, device=bias.device)
                 biases[branch, ...] = normalized_alpha[branch] * bias[...]
         weight = torch.sum(weights, dim=0)
         input = torch.sum(inputs, dim=0)

@@ -27,3 +27,4 @@ class Linear(torch.nn.Linear):
         output = torch.sum(outputs, 0)
         return output
 
+
