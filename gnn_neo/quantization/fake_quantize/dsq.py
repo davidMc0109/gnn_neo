@@ -82,7 +82,14 @@ class DSQFakeQuantize(QuantizeBase):
 
     def _quantization_impl(self, x):
         self.scale, self.zero_point = self.scale.to(x.device), self.zero_point.to(x.device)
-        x = dsq_function_per_tensor(x, self.scale, self.zero_point, self.qscheme.quant_min, self.qscheme.quant_max, self.alpha)
+        if self.qscheme.per_channel:
+            if 'ch_axis' in self.qscheme:
+                ch_axis = self.qscheme.ch_axis
+            else:
+                ch_axis = 0
+            x = dsq_function_per_channel(x, self.scale, self.zero_point, self.qscheme.quant_min, self.qscheme.quant_max, ch_axis, self.alpha)
+        else:
+            x = dsq_function_per_tensor(x, self.scale, self.zero_point, self.qscheme.quant_min, self.qscheme.quant_max, self.alpha)
         return x
 
     def _calibration_impl(self, x):

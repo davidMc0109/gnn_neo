@@ -8,7 +8,8 @@ def grad_scale(t, scale):
     return (t - (t * scale)).detach() + (t * scale)
 
 
-def _fake_quantize_learnable_per_channel_affine_training(x, scale, zero_point, ch_axis, quant_min, quant_max, grad_factor):
+def _fake_quantize_learnable_per_channel_affine_training(x, scale, zero_point, ch_axis, quant_min, quant_max,
+                                                         grad_factor):
     zero_point = (zero_point.round() - zero_point).detach() + zero_point
     new_shape = [1] * len(x.shape)
     new_shape[ch_axis] = x.shape[ch_axis]
@@ -39,11 +40,21 @@ class LearnableFakeQuantize(QuantizeBase):
 
     def _quantization_impl(self, x):
         if self.use_grad_scaling:
-            grad_factor = 1.0 / (x.numel()*self.qscheme.quant_max) ** 0.5
+            grad_factor = 1.0 / (x.numel() * self.qscheme.quant_max) ** 0.5
         else:
             grad_factor = 1.0
-        x = _fake_quantize_learnable_per_tensor_affine_training(x, self.scale, self.zero_grad, self.qscheme.quant_min, self.qscheme.quant_max, grad_factor)
-        # x = FakeQuantizeLearnablePertensorAffine.apply(x, self.scale, self.zero_grad, self.qscheme.quant_min, self.qscheme.quant_max, grad_factor)
+        if self.qscheme.per_channel:
+            if 'ch_axis' in self.qscheme:
+                ch_axis = self.qscheme.ch_axis
+            else:
+                ch_axis = 0
+            x = _fake_quantize_learnable_per_channel_affine_training(x, self.scale, self.zero_grad, ch_axis,
+                                                                     self.qscheme.quant_min, self.qscheme.quant_max,
+                                                                     grad_factor)
+        else:
+            x = _fake_quantize_learnable_per_tensor_affine_training(x, self.scale, self.zero_grad,
+                                                                    self.qscheme.quant_min, self.qscheme.quant_max,
+                                                                    grad_factor)
         return x
 
     def _calibration_impl(self, x):

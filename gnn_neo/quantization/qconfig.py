@@ -38,12 +38,14 @@ class QConfigEntry(AttrDict):
         self['observer'] = observer if observer is not None else MinMaxObserver
         self['fake_quantize'] = fake_quantize if fake_quantize is not None else LearnableFakeQuantize
         self['qscheme'] = q_scheme if q_scheme is not None else QScheme()
-        # self['mode'] = mode
+        if mode == 'per_channel':
+            self['qscheme']['per_channel'] = True
+        else:
+            self['qscheme']['per_channel'] = False
         for key in kwargs:
             self[key] = kwargs[key]
 
     def __call__(self, *args, **kwargs):
-        # observer = self.observer(self.mode)
         observer = self.observer()
         fake_quantize = self.fake_quantize(self.qscheme, observer)
         return fake_quantize

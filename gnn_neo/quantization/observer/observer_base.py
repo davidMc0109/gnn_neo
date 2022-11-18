@@ -2,7 +2,7 @@ import torch.nn as nn
 from gnn_neo.quantization.qconfig import QScheme
 
 class ObserverBase(nn.Module):
-    def __init__(self, mode):
+    def __init__(self):
         super(ObserverBase, self).__init__()
         # TODO:
 
