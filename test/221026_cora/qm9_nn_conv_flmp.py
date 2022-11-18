@@ -17,6 +17,10 @@ from gnn_neo.quantization.utils import enable_quantization, enable_calibration
 target = 0
 dim = 64
 batch_size = 32
+import datetime
+dt = datetime.datetime.now().strftime("%y%m%d%H%M%S")
+import os
+os.makedirs(os.path.join(osp.dirname(osp.realpath(__file__)), '..', 'run', 'qm9_nn_conv_flmp', dt))
 
 class MyTransform(object):
     def __call__(self, data):
@@ -150,3 +154,6 @@ for epoch in range(1, 301):
 
     print(f'Epoch: {epoch:03d}, LR: {lr:7f}, Loss: {loss:.7f}, '
           f'Val MAE: {val_error:.7f}, Test MAE: {test_error:.7f}')
+
+    torch.save(model.state_dict(), os.path.join(osp.dirname(osp.realpath(__file__)), '..', 'run', 'qm9_nn_conv_flmp', dt, '%d'%(epoch,)))
+
