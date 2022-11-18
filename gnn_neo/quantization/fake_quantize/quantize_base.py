@@ -17,14 +17,15 @@ class QuantizeBase(nn.Module):
 
     def get_extra_state(self):
         return {
-            "qscheme": self.qscheme,
+            "qscheme": dict(self.qscheme.items()),
             "observer": self.observer
         }
 
     def set_extra_state(self, state):
         if isinstance(state, dict):
             if "qscheme" in state:
-                self.qscheme = state["qscheme"]
+                entry = state['qscheme']
+                self.qscheme = QScheme(**entry)
             if "observer" in state:
                 self.observer = state["observer"]
 
